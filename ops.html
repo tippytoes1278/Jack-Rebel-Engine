@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jack Rebel — Ops Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111;--volt:#C9DB2A;--grey:#666;--bg:#f6f6f2;--line:#e5e5e5;--bad:#c0392b;--ok:#7a8c14;--warn:#c98a1e}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Archivo',sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;padding-bottom:90px}
+.top{background:var(--ink);color:#fff;padding:18px 20px;display:flex;justify-content:space-between;align-items:center}
+.top .l{font-weight:800;letter-spacing:.2em;font-size:15px}
+.top .s{font-size:10px;color:var(--volt);letter-spacing:.15em;font-weight:700}
+.tabs{display:flex;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.tab{flex:1;padding:14px 4px;text-align:center;font-weight:700;font-size:11px;letter-spacing:.06em;border:none;background:none;color:#999;cursor:pointer;border-bottom:3px solid transparent}
+.tab.on{color:var(--ink);border-bottom-color:var(--volt)}
+.pane{display:none;max-width:680px;margin:0 auto;padding:20px}
+.pane.on{display:block}
+h2{font-size:16px;font-weight:800;margin:4px 0 2px}
+.small{font-size:11px;color:#999;margin-bottom:8px}
+label{display:block;font-weight:800;font-size:10px;letter-spacing:.1em;margin:12px 0 5px;color:#444}
+input,select{width:100%;padding:11px;border:1.5px solid var(--ink);border-radius:4px;font-family:'Archivo';font-size:14px;background:#fff}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.go{width:100%;margin-top:18px;background:var(--ink);color:#fff;font-weight:800;letter-spacing:.14em;font-size:13px;padding:15px;border:none;border-radius:4px;cursor:pointer}
+.card{background:#fff;border:1px solid var(--line);border-radius:6px;padding:14px;margin:12px 0}
+.card h3{font-size:11px;letter-spacing:.12em;font-weight:800;margin-bottom:8px;display:flex;justify-content:space-between}
+.big{font-size:24px;font-weight:800}
+.row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px dashed #eee}
+.row:last-child{border:none}
+.verdict{font-size:11px;font-weight:800;letter-spacing:.08em;padding:4px 10px;border-radius:10px;color:#fff}
+.v-ok{background:var(--ok)}.v-warn{background:var(--warn)}.v-bad{background:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+th{font-size:10px;letter-spacing:.08em;text-align:left;padding:6px 4px;color:#666;border-bottom:2px solid var(--ink)}
+td{padding:7px 4px;border-bottom:1px solid #eee}
+td input{padding:7px;font-size:13px}
+.addrow{margin-top:10px;background:none;border:1.5px dashed #999;color:#666;font-family:'Archivo';font-weight:700;font-size:11px;padding:9px;border-radius:4px;width:100%;cursor:pointer}
+.trend-up{color:var(--ok);font-weight:800}.trend-dn{color:var(--bad);font-weight:800}.trend-fl{color:#999;font-weight:800}
+.note{font-size:11px;color:#999;margin-top:10px}
+.volt-tip{background:#f7f9e8;border-left:4px solid var(--volt);padding:10px 12px;font-size:12px;border-radius:4px;margin:12px 0}
+</style>
+</head>
+<body>
+<div class="top" onclick="location.href='index.html'" style="cursor:pointer"><div class="l">JACK REBEL</div><div class="s">OPS ENGINE v1</div></div>
+<div style="background:#fff;border-bottom:1px solid #e5e5e5;padding:10px 14px;display:flex;gap:8px;align-items:center;max-width:680px;margin:0 auto">
+<input id="jr_ws" placeholder="workspace passcode (8+ chars)" style="flex:1;padding:9px;border:1.5px solid #111;border-radius:4px;font-family:'Archivo';font-size:12px">
+<button onclick="jrSave()" style="background:#111;color:#fff;border:none;border-radius:4px;font-family:'Archivo';font-weight:800;font-size:10px;letter-spacing:.1em;padding:10px 14px;cursor:pointer">SAVE</button>
+<button onclick="jrLoad()" style="background:#C9DB2A;color:#111;border:none;border-radius:4px;font-family:'Archivo';font-weight:800;font-size:10px;letter-spacing:.1em;padding:10px 14px;cursor:pointer">LOAD</button>
+</div><div id="jr_status" style="max-width:680px;margin:0 auto;padding:4px 14px;font-size:10px;color:#999;font-family:'Archivo'"></div>
+<div class="tabs">
+  <button class="tab on" data-p="price">PRICING</button>
+  <button class="tab" data-p="fcast">FORECAST</button>
+  <button class="tab" data-p="stock">STOCK PLAN</button>
+</div>
+
+<!-- ============ PRICING ============ -->
+<div class="pane on" id="price">
+  <h2>What can each platform afford?</h2>
+  <div class="small">Enter your costs once. See real profit per order on every channel — after commissions, fees, and RTO.</div>
+
+  <div class="grid3">
+    <div><label>SELLING PRICE ₹</label><input type="number" id="p_price" value="2999"></div>
+    <div><label>COGS / PAIR ₹</label><input type="number" id="p_cogs" value="950"></div>
+    <div><label>PACKAGING ₹</label><input type="number" id="p_pack" value="80"></div>
+  </div>
+  <div class="grid3">
+    <div><label>SHIP OUT ₹</label><input type="number" id="p_ship" value="80"></div>
+    <div><label>RTO SHIP BOTH-WAYS ₹</label><input type="number" id="p_rtocost" value="180"></div>
+    <div><label>TARGET MARGIN %</label><input type="number" id="p_target" value="25"></div>
+  </div>
+  <div class="grid2">
+    <div><label>COD SHARE OF ORDERS %</label><input type="number" id="p_codshare" value="60"></div>
+    <div><label>RTO % (OF COD ORDERS)</label><input type="number" id="p_rto" value="25"></div>
+  </div>
+  <label>OWN-SITE AD COST PER ORDER (CAC) ₹</label>
+  <input type="number" id="p_cac" value="500">
+  <button class="go" onclick="calcPrice()">CALCULATE ALL PLATFORMS</button>
+  <div id="p_out"></div>
+</div>
+
+<!-- ============ FORECAST ============ -->
+<div class="pane" id="fcast">
+  <h2>What's selling. What's not.</h2>
+  <div class="small">Every Sunday, type last week's units per product (from Shopify → Analytics). The engine reads the trend and tells you weeks of stock left.</div>
+  <table id="f_table">
+    <thead><tr><th style="width:28%">PRODUCT</th><th>WK-3</th><th>WK-2</th><th>WK-1</th><th>THIS WK</th><th>STOCK NOW</th></tr></thead>
+    <tbody>
+      <tr><td><input value="Monarch Derby"></td><td><input type="number" value="8"></td><td><input type="number" value="11"></td><td><input type="number" value="13"></td><td><input type="number" value="17"></td><td><input type="number" value="60"></td></tr>
+      <tr><td><input value="Elite Loafer"></td><td><input type="number" value="6"></td><td><input type="number" value="5"></td><td><input type="number" value="6"></td><td><input type="number" value="5"></td><td><input type="number" value="70"></td></tr>
+    </tbody>
+  </table>
+  <button class="addrow" onclick="addRow()">+ ADD PRODUCT</button>
+  <div class="grid2">
+    <div><label>SUPPLIER LEAD TIME (WEEKS)</label><input type="number" id="f_lead" value="3"></div>
+    <div><label>SAFETY BUFFER (WEEKS)</label><input type="number" id="f_buf" value="1"></div>
+  </div>
+  <button class="go" onclick="calcForecast()">READ THE TRENDS</button>
+  <div id="f_out"></div>
+</div>
+
+<!-- ============ STOCK PLAN ============ -->
+<div class="pane" id="stock">
+  <h2>Order the right sizes, inside the budget.</h2>
+  <div class="small">Budget in, size curve applied, exact order quantities out. Edit the curve when your own sales data teaches you better.</div>
+  <div class="grid2">
+    <div><label>BUDGET FOR THIS ORDER ₹</label><input type="number" id="s_budget" value="100000"></div>
+    <div><label>COST PER PAIR ₹</label><input type="number" id="s_cost" value="950"></div>
+  </div>
+  <label>SIZE CURVE % — edit to match your sales history</label>
+  <div class="grid3">
+    <div><label>UK 6</label><input type="number" id="s6" value="8"></div>
+    <div><label>UK 7</label><input type="number" id="s7" value="18"></div>
+    <div><label>UK 8</label><input type="number" id="s8" value="26"></div>
+  </div>
+  <div class="grid3">
+    <div><label>UK 9</label><input type="number" id="s9" value="22"></div>
+    <div><label>UK 10</label><input type="number" id="s10" value="16"></div>
+    <div><label>UK 11</label><input type="number" id="s11" value="10"></div>
+  </div>
+  <button class="go" onclick="calcStock()">BUILD THE ORDER</button>
+  <div id="s_out"></div>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(function(t){
+  t.onclick=function(){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');document.getElementById(t.dataset.p).classList.add('on');
+  };
+});
+function v(id){return parseFloat(document.getElementById(id).value)||0;}
+function inr(n){return '\u20b9'+Math.round(n).toLocaleString('en-IN');}
+
+/* ---------- PRICING ---------- */
+var PLATFORMS=[
+ {name:'JACKREBEL.IN', comm:0, fee:2, cacApplies:true,
+  note:'Payment gateway ~2%. CAC applies. RTO applies on COD share.'},
+ {name:'MYNTRA', comm:22, fee:0, cacApplies:false,
+  note:'Commission varies 17\u201327% by category & brand tier \u2014 confirm your rate card.'},
+ {name:'AMAZON', comm:16, fee:2, cacApplies:false,
+  note:'Referral ~15\u201317% + closing fee. Their logistics reduce RTO handling but fees replace it.'},
+ {name:'FLIPKART', comm:18, fee:2, cacApplies:false,
+  note:'Commission + collection fee vary by tier \u2014 confirm rate card.'},
+ {name:'AJIO', comm:25, fee:0, cacApplies:false,
+  note:'Typically outright/SOR mix \u2014 margins differ if they buy stock. This assumes marketplace model.'}
+];
+function calcPrice(){
+  var price=v('p_price'), cogs=v('p_cogs'), pack=v('p_pack'), ship=v('p_ship'),
+      rtoCost=v('p_rtocost'), target=v('p_target'), cac=v('p_cac'),
+      codShare=v('p_codshare')/100, rto=v('p_rto')/100;
+  var effRTO=codShare*rto; // share of ALL orders that RTO
+  var out='';
+  PLATFORMS.forEach(function(pf){
+    var fees=price*(pf.comm+pf.fee)/100;
+    var cacCost=pf.cacApplies?cac:0;
+    // delivered order profit
+    var delivered=price-fees-cogs-pack-ship-cacCost;
+    // expected profit per order placed (marketplace RTO often absorbed differently; own-site full hit)
+    var rtoHit=pf.name==='JACKREBEL.IN'?effRTO:(effRTO*0.5); // marketplaces absorb part via their logistics/fees
+    var expected=delivered*(1-rtoHit)-rtoHit*(rtoCost+pack*0.5)- (pf.cacApplies? cacCost*0 :0);
+    var marginPct=expected/price*100;
+    var vcls=marginPct>=target?'v-ok':(marginPct>=target*0.6?'v-warn':'v-bad');
+    var vtxt=marginPct>=target?'HEALTHY':(marginPct>=target*0.6?'THIN':'LOSING');
+    // breakeven price for target margin: solve price where expected/price=target
+    var t=target/100, c=pf.comm/100+pf.fee/100;
+    var be=((cogs+pack+ship+cacCost)*(1-rtoHit)+rtoHit*(rtoCost+pack*0.5))/((1-c)*(1-rtoHit)-t);
+    out+='<div class="card"><h3>'+pf.name+' <span class="verdict '+vcls+'">'+vtxt+'</span></h3>'+
+      '<div class="big">'+inr(expected)+' <span style="font-size:12px;color:#666;font-weight:400">real profit / order ('+marginPct.toFixed(1)+'%)</span></div>'+
+      '<div class="row"><span>Delivered-order profit</span><b>'+inr(delivered)+'</b></div>'+
+      '<div class="row"><span>Platform takes</span><b>'+inr(fees)+' ('+(pf.comm+pf.fee)+'%)</b></div>'+
+      '<div class="row"><span>RTO drag (blended)</span><b>-'+inr(delivered*rtoHit+rtoHit*(rtoCost+pack*0.5))+'</b></div>'+
+      '<div class="row"><span>Price needed for '+target+'% margin</span><b>'+(be>0&&isFinite(be)?inr(be):'not reachable')+'</b></div>'+
+      '<div class="note">'+pf.note+'</div></div>';
+  });
+  out+='<div class="volt-tip"><b>Reading it:</b> the number that matters is <b>real profit / order</b> \u2014 it already includes the orders that never complete. If a platform shows LOSING, either its commission is too heavy at this price or the RTO assumption is \u2014 fix the input before you fix the price. The brand rule stands: one public price everywhere; if a marketplace can\u2019t afford \u20b92,999, delay that marketplace \u2014 don\u2019t split pricing.</div>';
+  document.getElementById('p_out').innerHTML=out;
+}
+
+/* ---------- FORECAST ---------- */
+function addRow(){
+  var tb=document.querySelector('#f_table tbody');
+  var tr=document.createElement('tr');
+  tr.innerHTML='<td><input placeholder="Product"></td><td><input type="number" value="0"></td><td><input type="number" value="0"></td><td><input type="number" value="0"></td><td><input type="number" value="0"></td><td><input type="number" value="0"></td>';
+  tb.appendChild(tr);
+}
+function calcForecast(){
+  var lead=v('f_lead'), buf=v('f_buf');
+  var out='';
+  document.querySelectorAll('#f_table tbody tr').forEach(function(tr){
+    var cells=tr.querySelectorAll('input');
+    var name=cells[0].value||'—';
+    var w=[+cells[1].value||0,+cells[2].value||0,+cells[3].value||0,+cells[4].value||0];
+    var stock=+cells[5].value||0;
+    var recent=(w[2]+w[3])/2, early=(w[0]+w[1])/2;
+    var vel=(w[1]+w[2]+w[3])/3; // weighted-ish recent velocity
+    var trend= recent>early*1.15?'up':(recent<early*0.85?'dn':'fl');
+    var tlabel= trend==='up'?'\u2191 GROWING':(trend==='dn'?'\u2193 FADING':'\u2192 FLAT');
+    var cover= vel>0? stock/vel : 999;
+    var reorderPoint=(lead+buf);
+    var status, scls;
+    if(cover<=reorderPoint){status='REORDER NOW';scls='v-bad';}
+    else if(cover<=reorderPoint+2){status='REORDER SOON';scls='v-warn';}
+    else if(cover>12&&trend!=='up'){status='OVERSTOCKED';scls='v-warn';}
+    else {status='OK';scls='v-ok';}
+    var suggest=Math.max(0,Math.ceil(vel*(lead+buf+4)-stock)); // cover lead+buffer+4 selling weeks
+    out+='<div class="card"><h3>'+name+' <span class="verdict '+scls+'">'+status+'</span></h3>'+
+      '<div class="row"><span>Velocity (recent avg / week)</span><b>'+vel.toFixed(1)+' pairs</b></div>'+
+      '<div class="row"><span>Trend</span><b class="trend-'+trend+'">'+tlabel+'</b></div>'+
+      '<div class="row"><span>Weeks of stock left</span><b>'+(cover>52?'52+':cover.toFixed(1))+'</b></div>'+
+      '<div class="row"><span>Suggested reorder qty</span><b>'+(suggest>0?suggest+' pairs':'none needed')+'</b></div>'+
+      (status==='OVERSTOCKED'?'<div class="note">Cash is sleeping in this SKU. Feature it in content before considering anything drastic \u2014 remember: no discounts. Bundle-free options: better photos, a reel, homepage slot.</div>':'')+
+      '</div>';
+  });
+  out+='<div class="volt-tip"><b>Reorder logic:</b> when weeks-of-stock \u2264 lead time + buffer, order today or you\u2019ll be out of stock before the factory delivers. Suggested qty covers the lead time plus a month of selling at current velocity \u2014 trim it if the trend is fading.</div>';
+  document.getElementById('f_out').innerHTML=out;
+}
+
+/* ---------- STOCK PLAN ---------- */
+function calcStock(){
+  var budget=v('s_budget'), cost=v('s_cost');
+  var curve=[['UK 6',v('s6')],['UK 7',v('s7')],['UK 8',v('s8')],['UK 9',v('s9')],['UK 10',v('s10')],['UK 11',v('s11')]];
+  var tot=curve.reduce((a,c)=>a+c[1],0);
+  if(Math.abs(tot-100)>0.01){
+    document.getElementById('s_out').innerHTML='<div class="card"><h3>CURVE ERROR</h3><div class="body">Your size percentages add to '+tot+'%. Make them total 100 and run again.</div></div>';
+    return;
+  }
+  var units=Math.floor(budget/cost);
+  var rows='', spent=0, totalU=0;
+  curve.forEach(function(c){
+    var q=Math.floor(units*c[1]/100);
+    spent+=q*cost; totalU+=q;
+    rows+='<div class="row"><span>'+c[0]+' ('+c[1]+'%)</span><b>'+q+' pairs \u2014 '+inr(q*cost)+'</b></div>';
+  });
+  var left=budget-spent;
+  var out='<div class="card"><h3>THE ORDER</h3>'+rows+
+    '<div class="row" style="border-top:2px solid #111;margin-top:6px"><span><b>TOTAL</b></span><b>'+totalU+' pairs \u2014 '+inr(spent)+'</b></div>'+
+    '<div class="row"><span>Budget unspent</span><b>'+inr(left)+'</b></div></div>';
+  out+='<div class="volt-tip"><b>Where the unspent money goes:</b> add it to UK 8 and 9 \u2014 stockouts in the middle sizes cost you full-price sales; leftover 6s and 11s cost you cash. And under-order at launch on purpose: \u201cback on the 7th\u201d is on-brand. Dead stock isn\u2019t.</div>';
+  document.getElementById('s_out').innerHTML=out;
+}
+</script>
+<script>
+var JR_URL="https://rcdwnzzehhvkxoojvhzo.supabase.co", JR_KEY="sb_publishable_30FbjhK_3nzcRbBHgk3ULg_qaB7o-_v", JR_SECTION="ops";
+(function(){var s=localStorage.getItem('jr_ws');if(s)document.getElementById('jr_ws').value=s;})();
+function jrStatus(m,ok){var e=document.getElementById('jr_status');e.textContent=m;e.style.color=ok?'#7a8c14':'#c0392b';}
+function jrCollect(){
+  var d={fields:{}};
+  document.querySelectorAll('input[id],select[id],textarea[id]').forEach(function(el){
+    if(el.id!=='jr_ws')d.fields[el.id]=el.value;
+  });
+  d.frows=[];document.querySelectorAll('#f_table tbody tr').forEach(function(tr){
+    var r=[];tr.querySelectorAll('input').forEach(function(i){r.push(i.value);});d.frows.push(r);});
+  return d;
+}
+function jrRestore(d){
+  if(!d)return;
+  if(d.frows&&d.frows.length){var tb=document.querySelector('#f_table tbody');tb.innerHTML='';
+    d.frows.forEach(function(r){var tr=document.createElement('tr');
+    tr.innerHTML='<td><input></td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td><td><input type="number"></td>';
+    tb.appendChild(tr);var ins=tr.querySelectorAll('input');r.forEach(function(v,i){if(ins[i])ins[i].value=v;});});}
+  Object.keys(d.fields||{}).forEach(function(k){
+    var el=document.getElementById(k);if(el)el.value=d.fields[k];
+  });
+}
+function jrWs(){
+  var w=document.getElementById('jr_ws').value.trim();
+  if(w.length<8){jrStatus('Passcode needs 8+ characters',false);return null;}
+  localStorage.setItem('jr_ws',w);return w;
+}
+function jrSave(){
+  var w=jrWs();if(!w)return;
+  jrStatus('Saving...',true);
+  fetch(JR_URL+'/rest/v1/app_state',{method:'POST',
+    headers:{'apikey':JR_KEY,'Authorization':'Bearer '+JR_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+    body:JSON.stringify([{workspace:w,section:JR_SECTION,data:jrCollect(),updated_at:new Date().toISOString()}])
+  }).then(function(r){jrStatus(r.ok?'Saved to cloud \u2713 '+new Date().toLocaleTimeString():'Save failed ('+r.status+')',r.ok);})
+    .catch(function(){jrStatus('Save failed - check connection',false);});
+}
+function jrLoad(){
+  var w=jrWs();if(!w)return;
+  jrStatus('Loading...',true);
+  fetch(JR_URL+'/rest/v1/app_state?workspace=eq.'+encodeURIComponent(w)+'&section=eq.'+JR_SECTION+'&select=data,updated_at',
+    {headers:{'apikey':JR_KEY,'Authorization':'Bearer '+JR_KEY}})
+  .then(function(r){return r.json();}).then(function(rows){
+    if(rows&&rows.length){jrRestore(rows[0].data);jrStatus('Loaded \u2713 (last saved '+new Date(rows[0].updated_at).toLocaleString()+')',true);}
+    else jrStatus('Nothing saved yet under this passcode',false);
+  }).catch(function(){jrStatus('Load failed - check connection',false);});
+}
+</script>
+</body>
+</html>

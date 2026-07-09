@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jack Rebel — Engine Room</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111;--volt:#C9DB2A;--bg:#f6f6f2}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Archivo',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;
+     display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+.logo{font-weight:800;letter-spacing:.25em;font-size:18px;margin-bottom:4px}
+.sub{font-size:10px;letter-spacing:.2em;font-weight:700;color:#999;margin-bottom:44px}
+.cards{width:100%;max-width:480px;display:flex;flex-direction:column;gap:16px}
+a.card{display:block;background:#fff;border:1.5px solid var(--ink);border-radius:8px;
+       padding:24px;text-decoration:none;color:var(--ink);position:relative;transition:transform .12s}
+a.card:active{transform:translateY(2px)}
+.card h2{font-size:18px;font-weight:800;letter-spacing:.04em}
+.card p{font-size:13px;color:#666;margin-top:6px;line-height:1.5}
+.card .tag{position:absolute;top:18px;right:18px;background:var(--volt);font-size:9px;font-weight:800;
+           letter-spacing:.1em;padding:5px 9px;border-radius:9px}
+.spring{width:74px;height:74px;margin-bottom:22px}
+.foot{margin-top:auto;padding-top:50px;font-size:10px;color:#aaa;letter-spacing:.14em;font-weight:700}
+</style>
+</head>
+<body>
+<svg class="spring" viewBox="0 0 200 200" aria-hidden="true">
+  <rect x="55" y="158" width="90" height="14" rx="7" fill="#C9DB2A"/>
+  <ellipse cx="100" cy="148" rx="38" ry="9" fill="none" stroke="#111" stroke-width="7"/>
+  <ellipse cx="100" cy="126" rx="36" ry="9" fill="none" stroke="#111" stroke-width="7"/>
+  <ellipse cx="100" cy="104" rx="34" ry="9" fill="none" stroke="#111" stroke-width="7"/>
+  <ellipse cx="100" cy="76" rx="33" ry="18" fill="#111"/>
+  <circle cx="89" cy="73" r="5" fill="#fff"/><circle cx="111" cy="73" r="5" fill="#fff"/>
+</svg>
+<div class="logo">JACK REBEL</div>
+<div class="sub">ENGINE ROOM</div>
+<div class="cards">
+  <a class="card" href="brand.html">
+    <span class="tag">CMO</span>
+    <h2>Brand Engine</h2>
+    <p>Build campaigns in the locked voice. Audit any copy for consistency. The brand rules, always one tap away.</p>
+  </a>
+  <a class="card" href="ops.html">
+    <span class="tag">CFO</span>
+    <h2>Ops Engine</h2>
+    <p>Real profit per platform after RTO. Weekly sales trends and reorder alerts. Size-curve stock orders inside budget.</p>
+  </a>
+  <a class="card" href="studio.html">
+    <span class="tag">STUDIO</span>
+    <h2>AI Studio</h2>
+    <p>Live trend search — footwear designs and bestsellers worldwide. Image generation for scenes and concepts. Powered by Claude, ChatGPT and Grok.</p>
+  </a>
+</div>
+<div class="foot">BUILT RIGHT, NOT LOUD · SAVES TO CLOUD WITH YOUR PASSCODE</div>
+</body>
+</html>

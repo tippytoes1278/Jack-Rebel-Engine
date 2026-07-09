@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jack Rebel — Brand Engine</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111;--volt:#C9DB2A;--grey:#666;--bg:#f6f6f2;--card:#fff;--line:#e5e5e5}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Archivo',sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;padding-bottom:80px}
+.top{background:var(--ink);color:#fff;padding:18px 20px;display:flex;justify-content:space-between;align-items:center}
+.top .l{font-weight:800;letter-spacing:.2em;font-size:15px}
+.top .s{font-size:10px;color:var(--volt);letter-spacing:.15em;font-weight:700}
+.tabs{display:flex;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.tab{flex:1;padding:14px 4px;text-align:center;font-weight:700;font-size:11px;letter-spacing:.08em;
+     border:none;background:none;color:#999;cursor:pointer;border-bottom:3px solid transparent}
+.tab.on{color:var(--ink);border-bottom-color:var(--volt)}
+.pane{display:none;max-width:640px;margin:0 auto;padding:20px}
+.pane.on{display:block}
+label{display:block;font-weight:800;font-size:11px;letter-spacing:.12em;margin:18px 0 8px}
+select,textarea,input{width:100%;padding:13px;border:1.5px solid var(--ink);border-radius:4px;
+  font-family:'Archivo';font-size:14px;background:#fff}
+textarea{min-height:90px;resize:vertical}
+.go{width:100%;margin-top:20px;background:var(--ink);color:#fff;font-weight:800;letter-spacing:.15em;
+    font-size:13px;padding:16px;border:none;border-radius:4px;cursor:pointer}
+.go:active{transform:translateY(1px)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:16px;margin:14px 0;position:relative}
+.card h3{font-size:11px;letter-spacing:.14em;font-weight:800;color:var(--grey);margin-bottom:10px}
+.card .body{font-size:14px;white-space:pre-wrap}
+.copybtn{position:absolute;top:12px;right:12px;background:var(--volt);border:none;border-radius:3px;
+  font-family:'Archivo';font-weight:700;font-size:10px;padding:6px 10px;cursor:pointer;letter-spacing:.06em}
+.note{font-size:12px;color:var(--grey);margin-top:8px}
+.flag{border-left:4px solid #c0392b;background:#fdf2f0;padding:12px 14px;border-radius:4px;margin:10px 0;font-size:13px}
+.flag b{display:block;font-size:11px;letter-spacing:.1em;color:#c0392b}
+.pass{border-left:4px solid #7a8c14;background:#f7f9e8;padding:12px 14px;border-radius:4px;margin:10px 0;font-size:13px}
+.scorebox{display:flex;align-items:center;gap:14px;margin:16px 0}
+.score{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-weight:800;font-size:22px;color:#fff;background:var(--ink)}
+.kit .sw{display:flex;gap:10px;margin:12px 0}
+.kit .chip{flex:1;border-radius:6px;padding:14px 10px;font-size:10px;font-weight:800;cursor:pointer;border:1px solid var(--line)}
+.rule-list{font-size:14px}.rule-list li{margin:10px 0 10px 18px}
+.small{font-size:11px;color:#999;margin-top:6px}
+h2{font-size:16px;font-weight:800;letter-spacing:.06em;margin:6px 0 2px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;
+  padding:10px 20px;border-radius:20px;font-size:12px;font-weight:700;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="top" onclick="location.href='index.html'" style="cursor:pointer"><div class="l">JACK REBEL</div><div class="s">BRAND ENGINE v1</div></div>
+<div style="background:#fff;border-bottom:1px solid #e5e5e5;padding:10px 14px;display:flex;gap:8px;align-items:center;max-width:680px;margin:0 auto">
+<input id="jr_ws" placeholder="workspace passcode (8+ chars)" style="flex:1;padding:9px;border:1.5px solid #111;border-radius:4px;font-family:'Archivo';font-size:12px">
+<button onclick="jrSave()" style="background:#111;color:#fff;border:none;border-radius:4px;font-family:'Archivo';font-weight:800;font-size:10px;letter-spacing:.1em;padding:10px 14px;cursor:pointer">SAVE</button>
+<button onclick="jrLoad()" style="background:#C9DB2A;color:#111;border:none;border-radius:4px;font-family:'Archivo';font-weight:800;font-size:10px;letter-spacing:.1em;padding:10px 14px;cursor:pointer">LOAD</button>
+</div><div id="jr_status" style="max-width:680px;margin:0 auto;padding:4px 14px;font-size:10px;color:#999;font-family:'Archivo'"></div>
+<div class="tabs">
+  <button class="tab on" data-p="build">CAMPAIGN BUILDER</button>
+  <button class="tab" data-p="check">CONSISTENCY CHECK</button>
+  <button class="tab" data-p="kit">BRAND KIT</button>
+</div>
+
+<!-- BUILDER -->
+<div class="pane on" id="build">
+  <h2>New campaign</h2>
+  <div class="small">Pick the angle, tell it the message, it writes everything in the locked voice.</div>
+  <label>CAMPAIGN TYPE</label>
+  <select id="ctype">
+    <option value="objection">Objection-flip (kill a doubt)</option>
+    <option value="proof">Proof (show, don't claim)</option>
+    <option value="pain">Pain (paid ads only)</option>
+    <option value="curiosity">Curiosity (make them ask)</option>
+    <option value="contrast">Contrast (us vs the industry)</option>
+    <option value="drop">Drop day (the 7th)</option>
+    <option value="restock">Restock / back in stock</option>
+  </select>
+  <label>AUDIENCE</label>
+  <select id="aud">
+    <option value="cold">Cold traffic (never heard of us)</option>
+    <option value="warm">Warm (visited site / watched video)</option>
+    <option value="email">THE 7TH email list</option>
+  </select>
+  <label>YOUR MESSAGE — one line, plain words</label>
+  <textarea id="msg" placeholder="e.g. People think crust leather creases badly / New loafer drops on the 7th / The sole is made in our own plant"></textarea>
+  <button class="go" onclick="buildCampaign()">BUILD IT</button>
+  <div id="out"></div>
+</div>
+
+<!-- CHECKER -->
+<div class="pane" id="check">
+  <h2>Consistency check</h2>
+  <div class="small">Paste any copy — ad, caption, newsletter, WhatsApp reply. It audits against every locked rule.</div>
+  <label>PASTE YOUR COPY</label>
+  <textarea id="chk" style="min-height:140px" placeholder="Paste text here..."></textarea>
+  <button class="go" onclick="runCheck()">RUN THE AUDIT</button>
+  <div id="chkout"></div>
+</div>
+
+<!-- KIT -->
+<div class="pane kit" id="kit">
+  <h2>The locked rules</h2>
+  <label>COLORS — tap to copy hex</label>
+  <div class="sw">
+    <button class="chip" style="background:#111;color:#fff" onclick="cp('#111111')">INK<br>#111111</button>
+    <button class="chip" style="background:#fff" onclick="cp('#FFFFFF')">WHITE<br>#FFFFFF</button>
+    <button class="chip" style="background:#C9DB2A" onclick="cp('#C9DB2A')">VOLT<br>#C9DB2A</button>
+    <button class="chip" style="background:#666;color:#fff" onclick="cp('#666666')">GREY<br>#666666</button>
+  </div>
+  <div class="note">Volt: badges, tech, box interior only. Max ~10% of any surface. Never a background.</div>
+  <label>TYPE</label>
+  <div class="card"><div class="body">Archivo only. Headlines: Expanded Bold caps. Subheads: Semibold. Body: Regular. No serifs, ever.</div></div>
+  <label>VOICE — the four rules</label>
+  <div class="card"><div class="body">1. Short sentences. Declarative.
+2. Proof, never adjectives.
+3. Talk to him, not at him.
+4. Confident, never loud. No exclamation marks.</div></div>
+  <label>LINES & THEIR HOMES</label>
+  <div class="card"><div class="body">Wear Your Change — motto. Sign-offs, box, footer, story end.
+Built right, not loud — product philosophy. About, box exterior, headlines.
+The 7th — drop day + newsletter name.
+A gift. From you, to your feet. — ribbon tag only.</div></div>
+  <label>JACK — placement law</label>
+  <div class="card"><div class="body">Appears when something happens: 404, empty cart, order placed, drop day, coming soon.
+Never on: box exterior, hang tag front, logo lockup, product ads, homepage hero.
+Emotion = eyes + squash/stretch only. One appearance per page/post.</div></div>
+  <label>HARD RULES</label>
+  <div class="card"><div class="body">No fake MRPs. No permanent sales. No fabricated reviews.
+"Wrinkle-resistant", never "wrinkle-free" (until the 30-day test is filmed).
+Competitors by price tier, never by name.
+Factory story = About + paid ads, never the homepage opener.</div></div>
+</div>
+
+<div class="toast" id="toast">Copied</div>
+
+<script>
+// ---------- tabs ----------
+document.querySelectorAll('.tab').forEach(function(t){
+  t.onclick=function(){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');document.getElementById(t.dataset.p).classList.add('on');
+  };
+});
+function toast(m){var t=document.getElementById('toast');t.textContent=m||'Copied';
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1400);}
+function cp(s){navigator.clipboard&&navigator.clipboard.writeText(s);toast('Copied '+s);}
+function copyCard(btn){var txt=btn.parentElement.querySelector('.body').innerText;
+  navigator.clipboard&&navigator.clipboard.writeText(txt);toast();}
+
+// ---------- campaign builder ----------
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function card(title,body){
+  return '<div class="card"><h3>'+title+'</h3><button class="copybtn" onclick="copyCard(this)">COPY</button><div class="body">'+esc(body)+'</div></div>';
+}
+
+var T={
+ objection:{
+  ads:m=>[ '"'+m+'."\nFair.\nHere\u2019s the thing: we\u2019re the factory. Same materials we\u2019ve exported since 2009 \u2014 without a brand\u2019s markup stacked on top.\nReal materials. Real price.',
+   'You\u2019re right to doubt it.\n'+m+' \u2014 that\u2019s what the market taught you.\nSo don\u2019t take our word. Watch the video. Bend the shoe yourself when it arrives. 7-day returns if we\u2019re wrong.',
+   'The doubt: '+m+'.\nThe answer: we own the factory in Agra that big brands source from.\nThe proof: on camera, on the site.' ],
+  subject:m=>'The question everyone\u2019s afraid to ask us',
+  news:m=>'Someone asked us this week: \u201c'+m+'?\u201d\n\nGood question. Honest answer: we\u2019re the factory. The materials are the same ones we\u2019ve exported since 2009 \u2014 the price is different because there\u2019s no middleman adding his cut.\n\nDon\u2019t believe copy. Believe the bend test on the site. And if the pair that arrives doesn\u2019t convince you, 7-day returns. No questions that waste your time.\n\n\u2014 Jack Rebel',
+  ig:m=>'\u201c'+m+'.\u201d\nFair. We\u2019d think that too.\nSo here\u2019s the receipt: our factory, our materials, since 2009. Watch it bend. Then decide.\n#JackRebel #WearYourChange',
+  grok:m=>'Extreme close-up, hands bending a dark leather formal shoe into a full arc on a white studio background, one hard light, long dramatic shadow, hyper-detailed leather texture, photorealistic photograph, no text, no logos'
+ },
+ proof:{
+  ads:m=>[ m+'.\nWe could write three paragraphs about it.\nOr you could watch it happen. 10 seconds. Sound off. Proof on.',
+   'No adjectives today.\nJust this: '+m+'.\nFilmed, not claimed. Link in bio.',
+   'Claim: '+m+'.\nEvidence: the video.\nVerdict: yours.' ],
+  subject:m=>'Filmed, not claimed',
+  news:m=>'Quick one.\n\n'+m+'. We filmed it instead of writing about it \u2014 because at our price, nobody should have to take a brand\u2019s word for anything.\n\nWatch it on the site. Takes 10 seconds.\n\n\u2014 Jack Rebel',
+  ig:m=>m+'.\nDon\u2019t read about it. Watch it.\n#JackRebel #BuiltRightNotLoud',
+  grok:m=>'Macro product demonstration shot, dark leather formal shoe being flexed by two hands, white seamless background, studio lighting with one hard key light, sharp focus on the bend point, photorealistic photograph, no text, no logos'
+ },
+ pain:{
+  ads:m=>[ 'Somewhere around 3 p.m., most formal shoes stop being shoes and start being a countdown.\n'+m+'.\nOurs are built for the hours after lunch. Crust leather. OrthoLite\u00ae. Flex sole. Under \u20b93,000.',
+   'Your feet know what time it is.\n'+m+' \u2014 we built the fix. Watch it bend.',
+   m+'.\nThat\u2019s not your feet failing. That\u2019s a stiff sole and a cardboard insole, sold at a price that says be grateful.\nWe disagreed. \u20b92,999.' ],
+  subject:m=>'The 3 p.m. problem',
+  news:m=>'You know the feeling. '+m+'.\n\nIt\u2019s not you. It\u2019s a stiff sole, a cardboard insole, and a market that decided comfort starts at \u20b910,000.\n\nWe own the factory, so we priced the fix at \u20b92,999. OrthoLite\u00ae inside, sole that bends in your hands.\n\n\u2014 Jack Rebel\n\nP.S. Pain angle stays in email + paid only. Never on the site.',
+  ig:m=>'PAID ADS ONLY \u2014 pain never runs on the site or organic feed.\n\nScript hook: \u201c'+m+'\u201d over a clock hitting 3:00. Cut to the flex. End on price.',
+  grok:m=>'Cinematic office scene at 3 p.m., tired man at a desk discreetly slipping his heel out of a stiff formal shoe under the table, warm afternoon window light, shallow depth of field, photorealistic photograph, no text, no logos'
+ },
+ curiosity:{
+  ads:m=>[ 'Why does a \u20b92,999 shoe bend like a \u20b912,000 one?\n'+m+'.\nNo middlemen. No import markup. Just the factory, direct.',
+   'The most interesting thing about this shoe is invisible.\n'+m+'. See inside \u2192',
+   'Question: '+m+'?\nAnswer: on the site. Takes 20 seconds. Changes how you buy shoes.' ],
+  subject:m=>'The trick isn\u2019t a trick',
+  news:m=>'A question we love: '+m+'?\n\nShort answer: we own the factory, so the money goes into the shoe instead of the supply chain.\n\nLong answer is on the site \u2014 with video.\n\n\u2014 Jack Rebel',
+  ig:m=>m+'?\nThe answer\u2019s in the build, not the branding.\nSee inside \u2014 link in bio.\n#JackRebel',
+  grok:m=>'Cutaway cross-section of a formal shoe showing internal layers, insole and flexible sole structure visible, clean white studio background, technical product photography style, one volt-green highlighted layer, photorealistic, no text, no logos'
+ },
+ contrast:{
+  ads:m=>[ 'Every shoe site: \u20b94,999 \u0336 \u20b92,499, HURRY.\nUs, forever: \u20b92,999.\n'+m+'.\nThat\u2019s not a discount. That\u2019s just the price.',
+   'The industry: urgency theatre.\nUs: '+m+'.\nPick your side.',
+   'Them: sale ends tonight.\nUs: '+m+'. The price is the price, on the 7th and every other day.' ],
+  subject:m=>'What the strike-through price is hiding',
+  news:m=>'You\u2019ve seen it: \u20b94,999 struck out, \u20b92,499 in red, a countdown timer sweating at you.\n\nHere\u2019s the trick: it was never \u20b94,999.\n\n'+m+'. Our price is \u20b92,999 today, on the 7th, and next year. If that feels strange, that\u2019s the industry. Not you.\n\n\u2014 Jack Rebel',
+  ig:m=>'No fake MRP. No countdown. No \u201clast chance.\u201d\n'+m+'.\n\u20b92,999 is just the price.\n#JackRebel #WearYourChange',
+  grok:m=>'Split-frame studio photograph, left side cluttered with sale-style red price tags on a generic shoe, right side one clean dark leather shoe on pure white with a single small green tag, minimalist contrast composition, photorealistic, no text, no logos'
+ },
+ drop:{
+  ads:m=>[ 'The 7th.\n'+m+'.\nNew silhouettes, same rule: real materials, one honest price.',
+   'Drop day.\n'+m+'.\nNo countdown. No fake scarcity. Just new shoes, on schedule, like we said.',
+   m+' \u2014 live now.\nBuilt right, not loud.' ],
+  subject:m=>'It\u2019s the 7th.',
+  news:m=>'It\u2019s the 7th, which means one thing.\n\n'+m+'.\n\nSame deal as always: crust leather or engineered sneakers, OrthoLite\u00ae inside, one honest price, no theatre. First come, first served \u2014 not because we manufactured scarcity, but because we make real batches.\n\nSee the drop \u2192 jackrebel.in\n\n\u2014 Jack Rebel',
+  ig:m=>'The 7th. '+m+'.\nJACK is bouncing.\nLink in bio.\n#JackRebel #The7th',
+  grok:m=>'Hero product photograph, new dark leather shoe floating on pure white background with a single dramatic hard shadow, premium minimal studio style, slight low angle, photorealistic \u2014 NOTE: for organic teaser only; the paid ad must use the real photo.'
+ },
+ restock:{
+  ads:m=>[ 'Back.\n'+m+'.\nIt sold out because we make real batches \u2014 not because a timer told you to hurry.',
+   'Flattened. Restocked.\n'+m+'. Same price as before, because of course it is.',
+   m+' \u2014 back on the shelf.\nNo \u201crestock price.\u201d No games. \u20b92,999, like always.' ],
+  subject:m=>'Back in shape.',
+  news:m=>'Quick update: '+m+'.\n\nIt went out of stock because batches are real. It\u2019s back at the same price \u2014 because a restock isn\u2019t a pricing event, whatever the industry taught you.\n\nJACK says: \u201cBack in shape.\u201d\n\n\u2014 Jack Rebel',
+  ig:m=>'Back in shape.\n'+m+'.\nSame price. Obviously.\n#JackRebel',
+  grok:m=>'Clean studio photograph of a dark leather formal shoe on white background, single volt-green circular badge element beside it, minimal composition, hard shadow, photorealistic, no text, no logos'
+ }
+};
+
+var AUD={cold:'Cold: lead with the demo/question, never the brand story. They owe you 2 seconds.',
+ warm:'Warm: they\u2019ve seen the shoe \u2014 lead with the objection-killer or the receipt (Myntra reviews, factory).',
+ email:'THE 7TH list: talk like a person who already trusts you. Shorter. Warmer. One link.'};
+
+function buildCampaign(){
+  var t=document.getElementById('ctype').value,
+      a=document.getElementById('aud').value,
+      m=document.getElementById('msg').value.trim();
+  if(!m){toast('Type your message first');return;}
+  m=m.replace(/[.!]+$/,'');
+  var k=T[t], out='';
+  out+='<div class="pass"><b>AUDIENCE NOTE</b>'+AUD[a]+'</div>';
+  k.ads(m).forEach(function(ad,i){out+=card('AD COPY \u2014 VARIANT '+(i+1),ad);});
+  out+=card('NEWSLETTER \u2014 SUBJECT',k.subject(m));
+  out+=card('NEWSLETTER \u2014 BODY',k.news(m));
+  out+=card('INSTAGRAM CAPTION',k.ig(m));
+  out+=card('WHATSAPP BROADCAST','Jack Rebel: '+m+'. Details \u2192 jackrebel.in'+(t==='drop'?'/new':''));
+  out+=card('GROK / IMAGE BRIEF',k.grok(m)+'\n\n+ style block: cinematic, moody teal-and-amber grade where scene-based; pure white studio where product-based.');
+  out+='<div class="note">Now paste any of these into the CONSISTENCY CHECK tab before publishing \u2014 including your own edits.</div>';
+  document.getElementById('out').innerHTML=out;
+}
+
+// ---------- consistency checker ----------
+var RULES=[
+ {re:/!/g, name:'EXCLAMATION MARK', fix:'Delete it. Confidence doesn\u2019t shout. (Voice rule 4)'},
+ {re:/\b(premium|luxury|luxurious|amazing|world-class|best[- ]in[- ]class|exquisite|elite quality|top[- ]notch)\b/gi, name:'BANNED ADJECTIVE', fix:'Replace with proof: the material, the number, the demo. (Voice rule 2)'},
+ {re:/\b(hurry|last chance|limited time|only \d+ left|ends tonight|flash sale|don\u2019t miss|dont miss|selling fast)\b/gi, name:'URGENCY THEATRE', fix:'Cut it. We don\u2019t manufacture scarcity \u2014 it\u2019s a brand-level rule.'},
+ {re:/wrinkle[- ]?free/gi, name:'UNPROVEN CLAIM', fix:'Say \u201cwrinkle-resistant\u201d until the 30-day test is filmed.'},
+ {re:/\b(cole haan|clarks|hush puppies|neeman|comet|gully labs|yoho|snitch|bata|woodland)\b/gi, name:'COMPETITOR NAMED', fix:'Refer by price tier (\u201cshoes 4x this price\u201d), never by name.'},
+ {re:/₹\s?[\d,]+\s?(\u0336|~~)|was ₹|MRP ₹[\d,]+.{0,12}now/gi, name:'FAKE MRP PATTERN', fix:'No slash pricing, ever. One honest price.'},
+ {re:/\b\d{1,2}%\s?(off|discount)\b/gi, name:'DISCOUNT LANGUAGE', fix:'We don\u2019t discount. Acquisition lever = free shipping + COD (already true).'},
+ {re:/\b(guys|fam|bestie|fire 🔥|lit\b)\b/gi, name:'OFF-VOICE SLANG', fix:'Talk to him, not at a crowd. Plain confident words.'},
+ {re:/\b(we are proud|we\u2019re proud|proudly)\b/gi, name:'SELF-CONGRATULATION', fix:'Show the thing you\u2019re proud of instead. Proof over pride.'},
+];
+function runCheck(){
+  var txt=document.getElementById('chk').value;
+  if(!txt.trim()){toast('Paste something first');return;}
+  var flags=[], total=0;
+  RULES.forEach(function(r){
+    var m=txt.match(r.re);
+    if(m){flags.push({name:r.name,hits:m.slice(0,4).join(', '),n:m.length,fix:r.fix});total+=m.length;}
+  });
+  // emoji count
+  var emo=txt.match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu)||[];
+  if(emo.length>1){flags.push({name:'EMOJI OVERUSE',hits:emo.join(' '),n:emo.length,fix:'One emoji max per creative. Pick the strongest.'});total+=emo.length-1;}
+  // long sentences
+  var longs=txt.split(/[.!?\n]+/).filter(s=>s.trim().split(/\s+/).length>26);
+  if(longs.length){flags.push({name:'SENTENCE TOO LONG',hits:longs.length+' sentence(s) over 26 words',n:longs.length,fix:'Break it. Short sentences. Declarative. (Voice rule 1)'});total+=longs.length;}
+
+  var score=Math.max(0,100-total*12);
+  var col=score>=90?'#7a8c14':(score>=60?'#c98a1e':'#c0392b');
+  var out='<div class="scorebox"><div class="score" style="background:'+col+'">'+score+'</div>'+
+    '<div><b>'+(score>=90?'ON BRAND':(score>=60?'NEEDS EDITS':'OFF BRAND'))+'</b><div class="small">'+
+    (flags.length? total+' issue(s) found across '+flags.length+' rule(s)':'No rule violations detected')+'</div></div></div>';
+  if(!flags.length){
+    out+='<div class="pass"><b>PASS</b>Voice rules, pricing rules, and claim rules all clear. Final human check: does it show proof, and would he \u2014 24, first job, smart with money \u2014 respect it?</div>';
+  }
+  flags.forEach(function(f){
+    out+='<div class="flag"><b>'+f.name+' \u00d7'+f.n+'</b>Found: \u201c'+esc(f.hits)+'\u201d<br>Fix: '+f.fix+'</div>';
+  });
+  document.getElementById('chkout').innerHTML=out;
+}
+</script>
+<script>
+var JR_URL="https://rcdwnzzehhvkxoojvhzo.supabase.co", JR_KEY="sb_publishable_30FbjhK_3nzcRbBHgk3ULg_qaB7o-_v", JR_SECTION="brand";
+(function(){var s=localStorage.getItem('jr_ws');if(s)document.getElementById('jr_ws').value=s;})();
+function jrStatus(m,ok){var e=document.getElementById('jr_status');e.textContent=m;e.style.color=ok?'#7a8c14':'#c0392b';}
+function jrCollect(){
+  var d={fields:{}};
+  document.querySelectorAll('input[id],select[id],textarea[id]').forEach(function(el){
+    if(el.id!=='jr_ws')d.fields[el.id]=el.value;
+  });
+  
+  return d;
+}
+function jrRestore(d){
+  if(!d)return;
+  
+  Object.keys(d.fields||{}).forEach(function(k){
+    var el=document.getElementById(k);if(el)el.value=d.fields[k];
+  });
+}
+function jrWs(){
+  var w=document.getElementById('jr_ws').value.trim();
+  if(w.length<8){jrStatus('Passcode needs 8+ characters',false);return null;}
+  localStorage.setItem('jr_ws',w);return w;
+}
+function jrSave(){
+  var w=jrWs();if(!w)return;
+  jrStatus('Saving...',true);
+  fetch(JR_URL+'/rest/v1/app_state',{method:'POST',
+    headers:{'apikey':JR_KEY,'Authorization':'Bearer '+JR_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates'},
+    body:JSON.stringify([{workspace:w,section:JR_SECTION,data:jrCollect(),updated_at:new Date().toISOString()}])
+  }).then(function(r){jrStatus(r.ok?'Saved to cloud \u2713 '+new Date().toLocaleTimeString():'Save failed ('+r.status+')',r.ok);})
+    .catch(function(){jrStatus('Save failed - check connection',false);});
+}
+function jrLoad(){
+  var w=jrWs();if(!w)return;
+  jrStatus('Loading...',true);
+  fetch(JR_URL+'/rest/v1/app_state?workspace=eq.'+encodeURIComponent(w)+'&section=eq.'+JR_SECTION+'&select=data,updated_at',
+    {headers:{'apikey':JR_KEY,'Authorization':'Bearer '+JR_KEY}})
+  .then(function(r){return r.json();}).then(function(rows){
+    if(rows&&rows.length){jrRestore(rows[0].data);jrStatus('Loaded \u2713 (last saved '+new Date(rows[0].updated_at).toLocaleString()+')',true);}
+    else jrStatus('Nothing saved yet under this passcode',false);
+  }).catch(function(){jrStatus('Load failed - check connection',false);});
+}
+</script>
+</body>
+</html>

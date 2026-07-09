@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jack Rebel — AI Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111;--volt:#C9DB2A;--bg:#f6f6f2;--line:#e5e5e5}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Archivo',sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;padding-bottom:80px}
+.top{background:var(--ink);color:#fff;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.top .l{font-weight:800;letter-spacing:.2em;font-size:15px}
+.top .s{font-size:10px;color:var(--volt);letter-spacing:.15em;font-weight:700}
+.tabs{display:flex;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.tab{flex:1;padding:14px 4px;text-align:center;font-weight:700;font-size:11px;letter-spacing:.06em;border:none;background:none;color:#999;cursor:pointer;border-bottom:3px solid transparent}
+.tab.on{color:var(--ink);border-bottom-color:var(--volt)}
+.pane{display:none;max-width:680px;margin:0 auto;padding:20px}
+.pane.on{display:block}
+h2{font-size:16px;font-weight:800;margin:4px 0 2px}
+.small{font-size:11px;color:#999;margin-bottom:10px}
+label{display:block;font-weight:800;font-size:10px;letter-spacing:.1em;margin:14px 0 6px;color:#444}
+textarea,select{width:100%;padding:12px;border:1.5px solid var(--ink);border-radius:4px;font-family:'Archivo';font-size:14px;background:#fff}
+textarea{min-height:90px;resize:vertical}
+.go{width:100%;margin-top:16px;background:var(--ink);color:#fff;font-weight:800;letter-spacing:.14em;font-size:13px;padding:15px;border:none;border-radius:4px;cursor:pointer}
+.go:disabled{opacity:.5}
+.chipbtn{background:#fff;border:1.5px solid var(--ink);border-radius:20px;font-family:'Archivo';font-weight:700;font-size:11px;padding:10px 14px;cursor:pointer;margin:4px 4px 0 0}
+.card{background:#fff;border:1px solid var(--line);border-radius:6px;padding:16px;margin:14px 0;white-space:pre-wrap;font-size:14px}
+.err{border-left:4px solid #c0392b;background:#fdf2f0;padding:12px;border-radius:4px;font-size:13px;margin:12px 0}
+.volt-tip{background:#f7f9e8;border-left:4px solid var(--volt);padding:10px 12px;font-size:12px;border-radius:4px;margin:12px 0}
+img.gen{width:100%;border-radius:6px;border:1px solid var(--line);margin-top:14px}
+.toggle{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:13px}
+.toggle input{width:auto}
+.spin{display:none;margin:14px auto;width:34px;height:34px}
+.spin.on{display:block}
+.spin div{width:100%;height:100%;border:4px solid #e5e5e5;border-top-color:var(--volt);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="top" onclick="location.href='index.html'"><div class="l">JACK REBEL</div><div class="s">AI STUDIO</div></div>
+<div class="tabs">
+  <button class="tab on" data-p="trends">TRENDS</button>
+  <button class="tab" data-p="imgs">IMAGES</button>
+  <button class="tab" data-p="setup">SETUP</button>
+</div>
+
+<!-- TRENDS -->
+<div class="pane on" id="trends">
+  <h2>What's moving, right now</h2>
+  <div class="small">Live web search through Claude. Each answer ends with 3 content ideas in the locked voice.</div>
+  <div>
+    <button class="chipbtn" onclick="preset('What footwear silhouettes and designs are trending worldwide right now among men 18-32? Which models are best sellers globally and in India? Include price points.')">🌍 Trending footwear worldwide</button>
+    <button class="chipbtn" onclick="preset('What is selling best in Indian D2C footwear right now — sneakers and formal shoes? Which brands, silhouettes and price points are winning?')">🇮🇳 What's selling in India D2C</button>
+    <button class="chipbtn" onclick="preset('What short-form content formats and hooks are performing best for fashion and footwear brands on Instagram Reels and YouTube Shorts this month?')">📈 Content formats winning now</button>
+    <button class="chipbtn" onclick="preset('What are formal shoe and office-wear trends for young Indian professionals this season? What occasions and styling are driving purchases?')">👞 Formal wear trends India</button>
+  </div>
+  <label>OR ASK ANYTHING</label>
+  <textarea id="t_q" placeholder="e.g. Are loafers or derbies growing faster in India right now?"></textarea>
+  <button class="go" id="t_go" onclick="runTrends()">SEARCH THE WORLD</button>
+  <div class="spin" id="t_spin"><div></div></div>
+  <div id="t_out"></div>
+</div>
+
+<!-- IMAGES -->
+<div class="pane" id="imgs">
+  <h2>Generate images</h2>
+  <div class="small">For story scenes, thumbnails, moodboards, and design exploration. Never for product ads — the shoe in the ad must be the real shoe.</div>
+  <label>PROVIDER</label>
+  <select id="i_prov">
+    <option value="openai">ChatGPT (gpt-image-1) — best quality</option>
+    <option value="grok">Grok (grok-2-image) — cheapest</option>
+  </select>
+  <label>DESCRIBE THE IMAGE</label>
+  <textarea id="i_q" placeholder="e.g. A new chunky-sole black leather derby concept on white background / The mirror moment scene from the story"></textarea>
+  <div class="toggle"><input type="checkbox" id="i_style" checked><span>Add the Jack Rebel film style block (cinematic, teal-amber, rain, no logos)</span></div>
+  <div class="toggle"><input type="checkbox" id="i_studio"><span>Or product-study style (pure white background, hard shadow)</span></div>
+  <button class="go" id="i_go" onclick="runImage()">GENERATE</button>
+  <div class="spin" id="i_spin"><div></div></div>
+  <div id="i_out"></div>
+  <div class="volt-tip">Video note, honestly: video APIs are still restricted and pricey. Generate your still here, then animate it in the Grok Imagine app — that combo covers the cinemagraph workflow at a fraction of the cost.</div>
+</div>
+
+<!-- SETUP -->
+<div class="pane" id="setup">
+  <h2>One-time setup</h2>
+  <div class="card">The keys live in Vercel — never in this page's code.
+
+1. Get keys (each takes ~3 minutes):
+   • Anthropic (trends): console.anthropic.com → API Keys
+   • OpenAI (images): platform.openai.com → API Keys
+   • xAI/Grok (images): console.x.ai → API Keys
+
+2. Add them to Vercel:
+   Vercel dashboard → your project → Settings →
+   Environment Variables → add these three:
+   ANTHROPIC_API_KEY
+   OPENAI_API_KEY
+   XAI_API_KEY
+
+3. Redeploy (Deployments → ⋯ → Redeploy).
+
+Costs, honestly:
+   • Trends query: roughly ₹4–8 each (tokens + search)
+   • ChatGPT image: roughly ₹4–15 each
+   • Grok image: roughly ₹6 each
+   Pay-per-use. No subscriptions. A heavy month
+   of weekly rituals costs less than one chai a week.</div>
+</div>
+
+<script>
+document.querySelectorAll('.tab').forEach(function(t){
+  t.onclick=function(){
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.pane').forEach(x=>x.classList.remove('on'));
+    t.classList.add('on');document.getElementById(t.dataset.p).classList.add('on');
+  };
+});
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+function preset(q){document.getElementById('t_q').value=q;runTrends();}
+
+function runTrends(){
+  var q=document.getElementById('t_q').value.trim();
+  if(!q)return;
+  var go=document.getElementById('t_go'),sp=document.getElementById('t_spin'),out=document.getElementById('t_out');
+  go.disabled=true;sp.classList.add('on');out.innerHTML='';
+  fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({prompt:q,search:true})})
+  .then(r=>r.json()).then(function(d){
+    go.disabled=false;sp.classList.remove('on');
+    if(d.error){out.innerHTML='<div class="err">'+esc(d.error)+'<br><br>If it mentions a missing key, do the SETUP tab steps.</div>';return;}
+    out.innerHTML='<div class="card">'+esc(d.text)+'</div>';
+  }).catch(function(e){go.disabled=false;sp.classList.remove('on');
+    out.innerHTML='<div class="err">Request failed — are you on the deployed Vercel site? This tab does not work when opening the file directly.</div>';});
+}
+
+function runImage(){
+  var q=document.getElementById('i_q').value.trim();
+  if(!q)return;
+  if(document.getElementById('i_style').checked)
+    q+=' — cinematic still, anamorphic 35mm film look, moody teal-and-amber grade, natural motivated lighting, gritty realism, photorealistic photograph, no text, no logos, no watermarks';
+  if(document.getElementById('i_studio').checked)
+    q+=' — pure white studio background, one hard key light, single long dramatic shadow, minimal premium product photography, photorealistic, no text, no logos';
+  var prov=document.getElementById('i_prov').value;
+  var go=document.getElementById('i_go'),sp=document.getElementById('i_spin'),out=document.getElementById('i_out');
+  go.disabled=true;sp.classList.add('on');out.innerHTML='';
+  fetch('/api/image',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({provider:prov,prompt:q})})
+  .then(r=>r.json()).then(function(d){
+    go.disabled=false;sp.classList.remove('on');
+    if(d.error){out.innerHTML='<div class="err">'+esc(d.error)+'<br><br>If it mentions a missing key, do the SETUP tab steps.</div>';return;}
+    if(d.b64)out.innerHTML='<img class="gen" src="data:image/png;base64,'+d.b64+'"><div class="small">Long-press / right-click to save.</div>';
+    else if(d.url)out.innerHTML='<img class="gen" src="'+d.url+'"><div class="small">Long-press / right-click to save.</div>';
+    else out.innerHTML='<div class="err">No image returned.</div>';
+  }).catch(function(e){go.disabled=false;sp.classList.remove('on');
+    out.innerHTML='<div class="err">Request failed — are you on the deployed Vercel site? This tab does not work when opening the file directly.</div>';});
+}
+</script>
+</body>
+</html>
