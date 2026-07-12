@@ -42,6 +42,11 @@ textarea{min-height:90px;resize:vertical}
 .rule-list{font-size:14px}.rule-list li{margin:10px 0 10px 18px}
 .small{font-size:11px;color:#999;margin-top:6px}
 h2{font-size:16px;font-weight:800;letter-spacing:.06em;margin:6px 0 2px}
+.spin{display:none;margin:14px auto;width:34px;height:34px}
+.spin.on{display:block}
+.spin div{width:100%;height:100%;border:4px solid #e5e5e5;border-top-color:var(--volt);border-radius:50%;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.go2{width:100%;margin-top:10px;background:#fff;color:var(--ink);border:2px solid var(--ink);font-weight:800;letter-spacing:.12em;font-size:12px;padding:14px;border-radius:4px;cursor:pointer;font-family:'Archivo'}
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;
   padding:10px 20px;border-radius:20px;font-size:12px;font-weight:700;opacity:0;transition:.3s;pointer-events:none}
 .toast.show{opacity:1}
@@ -56,7 +61,8 @@ h2{font-size:16px;font-weight:800;letter-spacing:.06em;margin:6px 0 2px}
 </div><div id="jr_status" style="max-width:680px;margin:0 auto;padding:4px 14px;font-size:10px;color:#999;font-family:'Archivo'"></div>
 <div class="tabs">
   <button class="tab on" data-p="build">CAMPAIGN BUILDER</button>
-  <button class="tab" data-p="check">CONSISTENCY CHECK</button>
+  <button class="tab" data-p="check">CONSISTENCY</button>
+  <button class="tab" data-p="rewrite">AI REWRITE</button>
   <button class="tab" data-p="kit">BRAND KIT</button>
 </div>
 
@@ -82,7 +88,9 @@ h2{font-size:16px;font-weight:800;letter-spacing:.06em;margin:6px 0 2px}
   </select>
   <label>YOUR MESSAGE — one line, plain words</label>
   <textarea id="msg" placeholder="e.g. People think crust leather creases badly / New loafer drops on the 7th / The sole is made in our own plant"></textarea>
-  <button class="go" onclick="buildCampaign()">BUILD IT</button>
+  <button class="go" onclick="buildCampaign()">BUILD IT (INSTANT TEMPLATES)</button>
+  <button class="go2" onclick="aiCampaign()">BUILD WITH AI — FRESH EVERY TIME</button>
+  <div class="spin" id="b_spin"><div></div></div>
   <div id="out"></div>
 </div>
 
@@ -92,8 +100,21 @@ h2{font-size:16px;font-weight:800;letter-spacing:.06em;margin:6px 0 2px}
   <div class="small">Paste any copy — ad, caption, newsletter, WhatsApp reply. It audits against every locked rule.</div>
   <label>PASTE YOUR COPY</label>
   <textarea id="chk" style="min-height:140px" placeholder="Paste text here..."></textarea>
-  <button class="go" onclick="runCheck()">RUN THE AUDIT</button>
+  <button class="go" onclick="runCheck()">RUN THE RULE AUDIT (INSTANT)</button>
+  <button class="go2" onclick="aiAudit()">DEEP AI AUDIT — JUDGES TONE, NOT JUST RULES</button>
+  <div class="spin" id="c_spin"><div></div></div>
   <div id="chkout"></div>
+</div>
+
+<!-- REWRITE -->
+<div class="pane" id="rewrite">
+  <h2>Convert anything to the brand voice</h2>
+  <div class="small">Paste any text — your rough draft, an old ad, a supplier's copy. It comes back rewritten in the locked 5C voice, with a note on what changed. Works on the deployed site only.</div>
+  <label>PASTE YOUR TEXT</label>
+  <textarea id="rw_in" style="min-height:140px" placeholder="e.g. HURRY! Our premium luxury leather shoes are on 50% SALE! Best quality guaranteed!!!"></textarea>
+  <button class="go" id="rw_go" onclick="aiRewrite()">REWRITE IN JACK REBEL VOICE</button>
+  <div class="spin" id="r_spin"><div></div></div>
+  <div id="rw_out"></div>
 </div>
 
 <!-- KIT -->
@@ -324,6 +345,44 @@ function jrLoad(){
     if(rows&&rows.length){jrRestore(rows[0].data);jrStatus('Loaded \u2713 (last saved '+new Date(rows[0].updated_at).toLocaleString()+')',true);}
     else jrStatus('Nothing saved yet under this passcode',false);
   }).catch(function(){jrStatus('Load failed - check connection',false);});
+}
+
+// ---------- AI-powered features (need deployed site + ANTHROPIC_API_KEY) ----------
+function aiAsk(mode,prompt,outId,spinId,btn){
+  var out=document.getElementById(outId),sp=document.getElementById(spinId);
+  if(btn)btn.disabled=true; sp.classList.add('on');
+  fetch('/api/ask',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({mode:mode,prompt:prompt})})
+  .then(function(r){return r.json().then(function(j){return {ok:r.ok,status:r.status,j:j};});})
+  .then(function(res){
+    if(btn)btn.disabled=false; sp.classList.remove('on');
+    if(!res.ok||res.j.error){
+      out.innerHTML='<div class="flag"><b>AI REQUEST FAILED ('+res.status+')</b>'+esc(res.j.error||'Unknown error')+'<br><br>Checklist: 1) Are you on the vercel.app URL, not the local file? 2) Does the repo contain the api folder? Test: open /api/ask in the browser - it should say POST only, not 404. 3) Is ANTHROPIC_API_KEY added in Vercel Settings and did you Redeploy after adding it?</div>';
+      return;
+    }
+    out.innerHTML=card('AI OUTPUT',res.j.text)+out.innerHTML;
+  })
+  .catch(function(){
+    if(btn)btn.disabled=false; sp.classList.remove('on');
+    out.innerHTML='<div class="flag"><b>NETWORK FAILED</b>The /api/ask function was not reachable. Open '+location.origin+'/api/ask in a new tab: if it shows a 404 page, the api folder is missing from your GitHub repo.</div>';
+  });
+}
+function aiCampaign(){
+  var t=document.getElementById('ctype'), a=document.getElementById('aud'),
+      m=document.getElementById('msg').value.trim();
+  if(!m){toast('Type your message first');return;}
+  var brief='Campaign type: '+t.options[t.selectedIndex].text+'. Audience: '+a.options[a.selectedIndex].text+'. The message/brief: '+m;
+  aiAsk('campaign',brief,'out','b_spin',null);
+}
+function aiRewrite(){
+  var x=document.getElementById('rw_in').value.trim();
+  if(!x){toast('Paste something first');return;}
+  aiAsk('rewrite',x,'rw_out','r_spin',document.getElementById('rw_go'));
+}
+function aiAudit(){
+  var x=document.getElementById('chk').value.trim();
+  if(!x){toast('Paste something first');return;}
+  aiAsk('audit',x,'chkout','c_spin',null);
 }
 </script>
 </body>
